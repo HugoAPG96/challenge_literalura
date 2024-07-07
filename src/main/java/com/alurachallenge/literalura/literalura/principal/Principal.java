@@ -2,8 +2,12 @@ package com.alurachallenge.literalura.literalura.principal;
 
 
 import com.alurachallenge.literalura.literalura.model.DatosLibros;
+import com.alurachallenge.literalura.literalura.model.Libro;
+import com.alurachallenge.literalura.literalura.repository.LibroRepository;
 import com.alurachallenge.literalura.literalura.service.ConsumoAPI;
 import com.alurachallenge.literalura.literalura.service.ConvierteDatos;
+import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
 import java.util.*;
@@ -16,6 +20,12 @@ public class Principal {
     private Scanner teclado = new Scanner(System.in);
     private ConvierteDatos conversor =new ConvierteDatos();
     private List<DatosLibros> datosLibros = new ArrayList<>();
+    @Autowired
+    private LibroRepository repositorio;
+
+    public Principal(LibroRepository repository) {
+        this.repositorio = repository;
+    }
 
     public void muestraElMenu() {
         var opcion = -1;
@@ -77,13 +87,20 @@ public class Principal {
         }
     }
 
+    @Transactional
     private void buscarLibroPorTitulo() {
         DatosLibros datos = getDatosLibro();
-        datosLibros.add(datos);
+        Libro libro = new Libro(datos);
+        repositorio.save(libro);
+        //datosLibros.add(datos);
         System.out.println(datos);
     }
 
+
     private void listarLibrosRegistrado() {
-        datosLibros.forEach(System.out::println);
+        List<Libro> libros = repositorio.findAll();
+        libros.stream()
+                .sorted(Comparator.comparing(Libro::toString))
+                .forEach(System.out::println);
     }
 }
