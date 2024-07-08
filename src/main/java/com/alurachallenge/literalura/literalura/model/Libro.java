@@ -13,10 +13,9 @@ public class Libro {
     private Long Id;
     @Column(unique = true)
     private String titulo;
-//    @ElementCollection
-//    @CollectionTable(name = "autores", joinColumns = @JoinColumn(name = "libro_id"))
-    @OneToMany(mappedBy = "libro", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    private List<Autor> autor;
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "autores", joinColumns = @JoinColumn(name = "libro_id"))
+    private List<DatosAutor> autor;
 //    @ElementCollection
 //    @CollectionTable(name = "idiomas", joinColumns = @JoinColumn(name = "libro_id"))
 //    @Column(name = "idioma")  // Necesario para la tabla de elementos simples
@@ -45,20 +44,29 @@ public class Libro {
 
     @Override
     public String toString() {
-        return
-                "(titulo='" + titulo +
-                ", autor=" + autor +
-                ", idiomas=" + idiomas +
-                ", numeroDeDescargas=" + numeroDeDescargas+")";
+        return String.format("\n"+
+                "-------- LIBRO --------\n" +
+                        "Título: %s\n" +
+                        "Autor: %s\n" +
+                        "Idioma(s): %s\n" +
+                        "Número de descargas: %.1f\n" +
+                        "------------------------\n"+
+                        "------------------------",
+                titulo,
+                getNombresAutores(),
+                String.join(", ", idiomas),
+                numeroDeDescargas
+        );
     }
 
-    public List<Autor> getEpisodios() {
+    private String getNombresAutores() {
+        return autor.stream()
+                .map(DatosAutor::nombre)
+                .collect(Collectors.joining(", "));
+    }
+
+    public List<DatosAutor> getEpisodios() {
         return autor;
-    }
-
-    public void setEpisodios(List<Autor> autor) {
-        autor.forEach(e -> e.setLibro(this));
-        this.autor = autor;
     }
 
     public Long getId() {
@@ -92,21 +100,4 @@ public class Libro {
     public void setNumeroDeDescargas(Double numeroDeDescargas) {
         this.numeroDeDescargas = numeroDeDescargas;
     }
-
-    // Método para obtener los nombres de los autores
-    /*private String getNombresAutores() {
-        if (autor == null || autor.isEmpty()) {
-            return "Sin autores";
-        }
-
-        return autor.stream()
-                .map(DatosAutor::getNombre)
-                .collect(Collectors.joining(", "));
-    }
-
-    public List<String> getAutores() {
-        return autor.stream()
-                .map(Autor::getNombre)
-                .collect(Collectors.toList());
-    }*/
 }

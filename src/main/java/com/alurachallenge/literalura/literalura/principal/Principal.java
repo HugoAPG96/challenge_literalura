@@ -8,6 +8,7 @@ import com.alurachallenge.literalura.literalura.service.ConsumoAPI;
 import com.alurachallenge.literalura.literalura.service.ConvierteDatos;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 
 
 import java.util.*;
@@ -90,10 +91,25 @@ public class Principal {
     @Transactional
     private void buscarLibroPorTitulo() {
         DatosLibros datos = getDatosLibro();
-        Libro libro = new Libro(datos);
-        repositorio.save(libro);
-        //datosLibros.add(datos);
-        System.out.println(datos);
+
+        if (datos == null) {
+            return;
+        }
+
+        try {
+            Libro libro = new Libro(datos);
+            repositorio.save(libro);
+            System.out.println("Libro guardado exitosamente: " + libro);
+        } catch (DataIntegrityViolationException e) {
+            // Manejar la excepción de clave duplicada
+            Optional<Libro> libroExistente = repositorio.findByTitulo(datos.titulo());
+            if (libroExistente.isPresent()) {
+                System.out.println(libroExistente.get());
+            } else {
+                System.out.println("Ocurrió un error al guardar el libro y no se pudo encontrar el libro existente.");
+                e.printStackTrace();
+            }
+        }
     }
 
 
