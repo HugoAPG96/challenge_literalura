@@ -65,7 +65,7 @@ public class Libro {
                 .collect(Collectors.joining(", "));
     }
 
-    public List<DatosAutor> getEpisodios() {
+    public List<DatosAutor> getAutores() {
         return autor;
     }
 

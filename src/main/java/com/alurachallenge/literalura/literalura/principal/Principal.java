@@ -1,6 +1,7 @@
 package com.alurachallenge.literalura.literalura.principal;
 
 
+import com.alurachallenge.literalura.literalura.model.DatosAutor;
 import com.alurachallenge.literalura.literalura.model.DatosLibros;
 import com.alurachallenge.literalura.literalura.model.Libro;
 import com.alurachallenge.literalura.literalura.repository.LibroRepository;
@@ -8,6 +9,8 @@ import com.alurachallenge.literalura.literalura.service.ConsumoAPI;
 import com.alurachallenge.literalura.literalura.service.ConvierteDatos;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import com.alurachallenge.literalura.literalura.service.LibroService;
+
 import org.springframework.dao.DataIntegrityViolationException;
 
 
@@ -24,9 +27,17 @@ public class Principal {
     @Autowired
     private LibroRepository repositorio;
 
+    //@Autowired
+    //private LibroService libroService;
+
     public Principal(LibroRepository repository) {
         this.repositorio = repository;
     }
+
+
+    /*public Principal(LibroService libroService) {
+        this.libroService = libroService;
+    }*/
 
     public void muestraElMenu() {
         var opcion = -1;
@@ -51,7 +62,7 @@ public class Principal {
                 case 2:
                     listarLibrosRegistrado();
                     break;
-                /*case 3:
+                case 3:
                     listarAutoresRegistrados();
                     break;
                 case 4:
@@ -59,7 +70,7 @@ public class Principal {
                     break;
                 case 5:
                     listarLibrosPorIdioma();
-                    break;*/
+                    break;
 
                 case 0:
                     System.out.println("Cerrando la aplicación...");
@@ -112,11 +123,24 @@ public class Principal {
         }
     }
 
-
     private void listarLibrosRegistrado() {
         List<Libro> libros = repositorio.findAll();
         libros.stream()
                 .sorted(Comparator.comparing(Libro::toString))
                 .forEach(System.out::println);
+    }
+
+    private void listarAutoresRegistrados() {
+        List<Libro> librosConAutores = repositorio.findAllWithAutores();
+        librosConAutores.stream()
+                .flatMap(libro -> libro.getAutores().stream())
+                .distinct()
+                .forEach(System.out::println);
+    }
+
+    private void listarAutoresVivosPorAno() {
+    }
+
+    private void listarLibrosPorIdioma() {
     }
 }
