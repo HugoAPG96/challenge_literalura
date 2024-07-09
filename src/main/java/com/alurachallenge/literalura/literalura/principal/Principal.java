@@ -9,13 +9,11 @@ import com.alurachallenge.literalura.literalura.service.ConsumoAPI;
 import com.alurachallenge.literalura.literalura.service.ConvierteDatos;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import com.alurachallenge.literalura.literalura.service.LibroService;
 
 import org.springframework.dao.DataIntegrityViolationException;
 
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class Principal {
 
@@ -27,17 +25,9 @@ public class Principal {
     @Autowired
     private LibroRepository repositorio;
 
-    //@Autowired
-    //private LibroService libroService;
-
     public Principal(LibroRepository repository) {
         this.repositorio = repository;
     }
-
-
-    /*public Principal(LibroService libroService) {
-        this.libroService = libroService;
-    }*/
 
     public void muestraElMenu() {
         var opcion = -1;
@@ -132,15 +122,104 @@ public class Principal {
 
     private void listarAutoresRegistrados() {
         List<Libro> librosConAutores = repositorio.findAllWithAutores();
-        librosConAutores.stream()
-                .flatMap(libro -> libro.getAutores().stream())
-                .distinct()
-                .forEach(System.out::println);
+
+        for (Libro libro : librosConAutores) {
+            System.out.println("-------- AUTORES --------");
+            for (DatosAutor autor : libro.getAutores()) {
+                System.out.println("Autor: " + autor.nombre());
+                System.out.println("Fecha de Nacimiento: " + (autor.fechaDeNacimiento() != null ? autor.fechaDeNacimiento() : ""));
+                System.out.println("Fecha de Muerte: " + (autor.fechaDeMuerte() != null ? autor.fechaDeMuerte() : ""));
+            }
+            System.out.println("Libros: " + libro.getTitulo());
+            System.out.println("------------------------");
+        }
     }
 
     private void listarAutoresVivosPorAno() {
+        System.out.println("Ingrese el año para listar autores vivos:");
+
+        int anio;
+        try {
+            anio = Integer.parseInt(teclado.nextLine());
+        } catch (NumberFormatException e) {
+            System.out.println("Por favor, ingrese un año válido.");
+            return;
+        }
+
+        String anoString = String.valueOf(anio);
+        List<Libro> librosConAutoresVivos = repositorio.findLibrosWithAutoresVivosEnAno(anoString);
+
+        if (librosConAutoresVivos.isEmpty()) {
+            System.out.println("No se encontraron autores vivos en el año " + anio);
+        } else {
+            System.out.println("-------- AUTORES VIVOS EN " + anio + " --------");
+            for (Libro libro : librosConAutoresVivos) {
+                for (DatosAutor autor : libro.getAutores()) {
+                    String nombre = autor.nombre();
+                    String fechaNacimientoStr = autor.fechaDeNacimiento();
+                    String fechaMuerteStr = autor.fechaDeMuerte();
+
+                    // Verificar si las fechas tienen al menos 4 caracteres
+                    String anioNacimiento = (fechaNacimientoStr != null && fechaNacimientoStr.length() >= 4)
+                            ? fechaNacimientoStr.substring(0, 4)
+                            : "Desconocida";
+                    String anioMuerte = (fechaMuerteStr != null && fechaMuerteStr.length() >= 4)
+                            ? fechaMuerteStr.substring(0, 4)
+                            : "Aún vivo";
+
+                    System.out.println("Autor: " + nombre);
+                    System.out.println("Fecha de Nacimiento: " + anioNacimiento);
+                    System.out.println("Fecha de Muerte: " + anioMuerte);
+                    System.out.println("Libro asociado: " + libro.getTitulo());
+                    System.out.println("----------------------------------");
+                }
+            }
+        }
     }
 
     private void listarLibrosPorIdioma() {
+        Scanner teclado = new Scanner(System.in);
+
+        // Mostrar menú de idiomas disponibles
+        System.out.println("Seleccione el idioma para listar los libros:");
+        System.out.println("es - Español");
+        System.out.println("en - Inglés");
+        System.out.println("fr - Francés");
+        System.out.println("py - Portugués");
+        System.out.println("it - Italiano");
+
+        // Leer la entrada del usuario
+        String opcion = teclado.nextLine().trim().toLowerCase(); // Convertir a minúsculas y quitar espacios
+
+        // Mapa de equivalencias de idiomas
+        Map<String, String> idiomasMap = Map.of(
+                "es", "Español",
+                "en", "Inglés",
+                "fr", "Francés",
+                "py", "Portugués",
+                "it", "Italiano"
+        );
+
+        // Verificar si la opción ingresada está en el mapa de idiomas
+        if (idiomasMap.containsKey(opcion)) {
+            String idiomaSeleccionado = idiomasMap.get(opcion);
+
+            // Obtener libros por el idioma seleccionado
+            List<Libro> librosPorIdioma = repositorio.findByIdioma(idiomaSeleccionado);
+
+            if (librosPorIdioma.isEmpty()) {
+                System.out.println("No se encontraron libros en el idioma " + idiomaSeleccionado);
+            } else {
+                System.out.println("-------- LIBROS EN " + idiomaSeleccionado.toUpperCase() + " --------");
+                for (Libro libro : librosPorIdioma) {
+                    System.out.println("Título: " + libro.getTitulo());
+                    System.out.println("Idiomas: " + libro.getIdiomas());
+                    System.out.println("Número de Descargas: " + libro.getNumeroDeDescargas());
+                    System.out.println("----------------------------------");
+                }
+            }
+        } else {
+            System.out.println("Opción de idioma no válida. Por favor, seleccione una opción válida.");
+        }
     }
 }

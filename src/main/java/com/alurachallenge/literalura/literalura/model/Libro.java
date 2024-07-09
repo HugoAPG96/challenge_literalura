@@ -16,9 +16,6 @@ public class Libro {
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "autores", joinColumns = @JoinColumn(name = "libro_id"))
     private List<DatosAutor> autor;
-//    @ElementCollection
-//    @CollectionTable(name = "idiomas", joinColumns = @JoinColumn(name = "libro_id"))
-//    @Column(name = "idioma")  // Necesario para la tabla de elementos simples
     private List<String> idiomas;
     private Double numeroDeDescargas;
 
@@ -26,8 +23,8 @@ public class Libro {
             "en", "Inglés",
             "es", "Español",
             "fr", "Francés",
+            "pt","Portugues",
             "it","Italiano"
-
             // Agregar más si es necesario
     );
 
@@ -45,7 +42,7 @@ public class Libro {
     @Override
     public String toString() {
         return String.format("\n"+
-                "-------- LIBRO --------\n" +
+                        "-------- LIBRO --------\n" +
                         "Título: %s\n" +
                         "Autor: %s\n" +
                         "Idioma(s): %s\n" +
